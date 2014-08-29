@@ -1,0 +1,41 @@
+
+%{
+
+#include <string>
+#include "stl_parse.tab.hpp"
+
+extern int
+yyerror(const char *msg);
+
+extern int
+yywrap(void);
+// Avoid conflicting declarations of yywrap.
+#define YY_SKIP_YYWRAP
+
+%}
+
+digit [0-9]
+integer -?{digit}+
+non_exp {integer}\.{digit}*
+exp {non_exp}[eE]-?{integer}
+num {integer}|{non_exp}|{exp}
+
+letter [A-Za-z]
+alpha_num [A-Za-z0-9_,.-]
+str {letter}{alpha_num}*
+
+%%
+
+"solid" { return SOLID; }
+"endsolid" { return END_SOLID; }
+"facet" { return FACET; }
+"endfacet" { return END_FACET; }
+"normal" { return NORMAL; }
+"outer loop" { return OUTER_LOOP; }
+"endloop" { return END_LOOP; }
+"vertex" { return VERTEX; }
+{num} { yylval.dVal = atof(yytext); return NUMBER; }
+{str} { yylval.sVal = new std::string(yytext); return NAME; }
+[ \t\t]+ {}
+[\n] { ++yylineno; }
+. { yyerror("unknown symbol");  exit(3); }

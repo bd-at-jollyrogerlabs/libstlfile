@@ -1,0 +1,91 @@
+
+%{
+
+#include <cstdio>
+#include <iostream>
+#include <cerrno>
+#include <string>
+#include "StlFileProcessor.h"
+
+extern int
+yylex(void);
+
+int
+yyerror(const char *msg);
+
+int
+yywrap(void);
+
+void
+setStlFileProcessor(libstlfile::StlFileProcessor *newProcessor);
+
+libstlfile::StlFileProcessor *processor = NULL;
+
+%}
+
+%union {
+  double dVal;
+  std::string *sVal;
+  double tVal[3];
+}
+
+%start SOLID_DEF
+
+%token SOLID END_SOLID FACET END_FACET NORMAL OUTER_LOOP END_LOOP VERTEX
+%token <dVal> NUMBER
+%token <sVal> NAME
+%type <tVal> VERTEX_SPEC SURFACE_NORMAL TRIANGLE
+
+%%
+
+SURFACE_NORMAL: NORMAL NUMBER NUMBER NUMBER {
+  $$[0] = $2;
+  $$[1] = $3;
+  $$[2] = $4;
+};
+
+VERTEX_SPEC: VERTEX NUMBER NUMBER NUMBER {
+  $$[0] = $2;
+  $$[1] = $3;
+  $$[2] = $4;
+};
+
+TRIANGLE: FACET SURFACE_NORMAL OUTER_LOOP VERTEX_SPEC VERTEX_SPEC VERTEX_SPEC END_LOOP END_FACET {
+  processor->addTriangle($2, $4, $5, $6);
+};
+
+TRIANGLE_LIST : TRIANGLE | TRIANGLE_LIST TRIANGLE;
+
+SOLID_DEF: SOLID NAME TRIANGLE_LIST END_SOLID NAME {
+  if (*($2) != *($5)) {
+    yyerror("solid name mismatch");
+  }
+  processor->setSolidName(*($2));
+  delete $2;
+  delete $5;
+};
+
+%%
+
+int
+yyerror(const char *msg)
+{
+  extern int yylineno;  // Defined in the scanner.
+  extern char *yytext;  // Defined in the scanner.
+
+  std::cerr << "ERR: '" << msg << "' at symbol '" << yytext
+	    << "' on line " << yylineno << std::endl;
+  exit(2);
+}
+
+int
+yywrap()
+{
+  return 1;
+}
+
+void
+setStlFileProcessor(libstlfile::StlFileProcessor *newProcessor)
+{
+  processor = newProcessor;
+}
