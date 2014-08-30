@@ -1,7 +1,7 @@
-# $Id$
 
 AC_PREREQ(2.59)
-AC_INIT([libstlfile], [0.1.4])
+
+AC_INIT([libstlfile], [0.0.0] [bd@jollyrogerlabs.com])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([stl_file_parser_driver.cpp])
 AC_CONFIG_AUX_DIR([scripts])
