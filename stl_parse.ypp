@@ -1,6 +1,16 @@
 
 %{
 
+/**
+ * Bison/Yacc parser (mostly Yacc) for .stl files.  The .stl file
+ * format is close enough to a regular language that it wouldn't be a
+ * big deal to handle it with just Flex/Lex, but this seemed a bit
+ * easier.
+ *
+ * Feature set was limited to what's available in Yacc because
+ * autotools won't play nicely with more advanced Bison features
+ * (e.g. Bison C++ support, which is a pain in the ass anyway).
+ */
 #include <cstdio>
 #include <iostream>
 #include <cerrno>
